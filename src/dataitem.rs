@@ -5,7 +5,7 @@ use thiserror::Error;
 /// While working with this struct, it is assumed that all the characters in the string are:
 ///     1. Valid uf8(Rust takes care of this since all the Strings in rust are valid ut8)
 ///     2. Ascii digits or dot
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum DataItem {
     Binary(String),
     RealOrInt(String),
