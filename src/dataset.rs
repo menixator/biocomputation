@@ -6,14 +6,24 @@ use thiserror::Error;
 ///     1. Valid uf8(Rust takes care of this since all the Strings in rust are valid ut8)
 ///     2. Ascii digits or dot
 #[derive(Debug, PartialEq)]
-pub struct DataItem(String);
+pub enum DataItem {
+    Binary(String),
+    RealOrInt(String),
+}
 
 impl DataItem {
     pub const IGNORED_CHAR: char = '.';
 
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Binary(binary) => binary,
+            Self::RealOrInt(real) => real,
+        }
+    }
+
     /// Gets a character at an index. Returns none if it is out of range
     fn char_at(&self, index: usize) -> Option<char> {
-        self.0.chars().nth(index)
+        self.as_str().chars().nth(index)
     }
 
     /// Checks if a particular index is ignored. Returns false is the index is out of range.
@@ -25,7 +35,7 @@ impl DataItem {
     }
 
     fn is_binary(&self) -> bool {
-        self.0
+        self.as_str()
             .chars()
             .all(|character| character == '0' || character == '1')
     }
@@ -52,6 +62,7 @@ impl FromStr for DataItem {
             return Err(DataItemParseError::NotValidAscii);
         }
 
+        let mut is_binary = true;
         let mut found_ignored_char = false;
         // if all characters are digits and only one ignored character is present, allow it
         for character in input.chars() {
@@ -62,10 +73,17 @@ impl FromStr for DataItem {
                 found_ignored_char = true;
             } else if !character.is_ascii_digit() {
                 return Err(DataItemParseError::NotDigit);
+            } else {
+                is_binary = character == '0' || character == '1';
             }
         }
 
-        Ok(DataItem(input.to_owned()))
+        let input = input.to_owned();
+        Ok(if is_binary && !found_ignored_char {
+            DataItem::Binary(input)
+        } else {
+            DataItem::RealOrInt(input)
+        })
     }
 }
 
@@ -73,18 +91,21 @@ impl FromStr for DataItem {
 mod test {
     use super::*;
     #[test]
-    fn test_ascii_digit() {
-        assert_eq!("00000".parse(), Ok(DataItem("00000".to_owned())));
+    fn test_binary() {
+        assert_eq!("00000".parse(), Ok(DataItem::Binary("00000".to_owned())));
     }
 
     #[test]
-    fn test_ascii_non_digit() {
+    fn test_non_digit() {
         assert_eq!("abc".parse::<DataItem>(), Err(DataItemParseError::NotDigit));
     }
 
     #[test]
     fn test_one_ignored() {
-        assert_eq!("000.".parse::<DataItem>(), Ok(DataItem("000.".to_owned())));
+        assert_eq!(
+            "000.".parse::<DataItem>(),
+            Ok(DataItem::RealOrInt("000.".to_owned()))
+        );
     }
 
     #[test]
