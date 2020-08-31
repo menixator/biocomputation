@@ -30,8 +30,8 @@ pub enum DataItemParseError {
     #[error("not valid ascii")]
     NotValidAscii,
 
-    #[error("not valid ascii digit")]
-    NotAsciiDigit,
+    #[error("not a digit")]
+    NotDigit,
 
     #[error("multiple ignored characters present")]
     MultipleIngoredChar,
@@ -55,7 +55,7 @@ impl FromStr for DataItem {
                 }
                 found_ignored_char = true;
             } else if !character.is_ascii_digit() {
-                return Err(DataItemParseError::NotAsciiDigit);
+                return Err(DataItemParseError::NotDigit);
             }
         }
 
