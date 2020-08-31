@@ -31,8 +31,16 @@ impl FromStr for DataItem {
 mod test {
     use super::*;
     #[test]
-    fn test_valid_ascii() {
+    fn test_ascii() {
         assert_eq!("00000".parse(), Ok(DataItem("00000".to_owned())));
+    }
+
+    #[test]
+    fn test_non_ascii() {
+        assert_eq!(
+            "not_ascii❤".parse::<DataItem>(),
+            Err(DataItemParseError::NotValidAscii)
+        );
     }
 }
 
