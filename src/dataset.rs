@@ -35,9 +35,17 @@ impl DataItem {
     }
 
     fn is_binary(&self) -> bool {
-        self.as_str()
-            .chars()
-            .all(|character| character == '0' || character == '1')
+        match self {
+            Self::Binary(_) => true,
+            _ => false,
+        }
+    }
+
+    fn is_real_or_int(&self) -> bool {
+        match self {
+            Self::RealOrInt(_) => true,
+            _ => false,
+        }
     }
 }
 
