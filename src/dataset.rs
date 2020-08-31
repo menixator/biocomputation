@@ -8,6 +8,23 @@ use thiserror::Error;
 #[derive(Debug, PartialEq)]
 pub struct DataItem(String);
 
+impl DataItem {
+    pub const IGNORED_CHAR: char = '.';
+
+    /// Gets a character at an index. Returns none if it is out of range
+    fn char_at(&self, index: usize) -> Option<char> {
+        self.0.chars().nth(index)
+    }
+
+    /// Checks if a particular index is ignored. Returns false is the index is out of range.
+    fn is_index_ignored(&self, index: usize) -> bool {
+        match self.char_at(index) {
+            None => false,
+            Some(character) => character == Self::IGNORED_CHAR,
+        }
+    }
+}
+
 #[derive(Error, Clone, Debug, PartialEq)]
 pub enum DataItemParseError {
     #[error("not valid ascii")]
