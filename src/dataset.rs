@@ -82,6 +82,16 @@ mod test {
     }
 
     #[test]
+    fn test_is_index_ignored() {
+        let data_item = DataItem::from_str("0123.0").expect("data item input is invalid");
+        assert_eq!(data_item.is_index_ignored(0), false);
+        // Index in range
+        assert_eq!(data_item.is_index_ignored(4), true);
+        // Index out of range
+        assert_eq!(data_item.is_index_ignored(6), false);
+    }
+
+    #[test]
     fn test_multiple_ignored() {
         assert_eq!(
             "000.1.1".parse::<DataItem>(),
