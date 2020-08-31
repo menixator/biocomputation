@@ -23,6 +23,12 @@ impl DataItem {
             Some(character) => character == Self::IGNORED_CHAR,
         }
     }
+
+    fn is_binary(&self) -> bool {
+        self.0
+            .chars()
+            .all(|character| character == '0' || character == '1')
+    }
 }
 
 #[derive(Error, Clone, Debug, PartialEq)]
@@ -79,6 +85,21 @@ mod test {
     #[test]
     fn test_one_ignored() {
         assert_eq!("000.".parse::<DataItem>(), Ok(DataItem("000.".to_owned())));
+    }
+
+    #[test]
+    fn test_is_binary() {
+        let data_item = DataItem::from_str("0123.0").expect("data item input is invalid");
+        assert_eq!(data_item.is_binary(), false);
+
+        let data_item = DataItem::from_str("01230").expect("data item input is invalid");
+        assert_eq!(data_item.is_binary(), false);
+
+        let data_item = DataItem::from_str("00010.1").expect("data item input is invalid");
+        assert_eq!(data_item.is_binary(), false);
+
+        let data_item = DataItem::from_str("00010").expect("data item input is invalid");
+        assert_eq!(data_item.is_binary(), true);
     }
 
     #[test]
