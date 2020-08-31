@@ -82,7 +82,9 @@ impl FromStr for DataItem {
             } else if !character.is_ascii_digit() {
                 return Err(DataItemParseError::NotDigit);
             } else {
-                is_binary = character == '0' || character == '1';
+                if is_binary {
+                    is_binary = character == '0' || character == '1';
+                }
             }
         }
 
