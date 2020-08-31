@@ -47,6 +47,26 @@ impl DataItem {
             _ => false,
         }
     }
+
+    fn num_digits_width(&self) -> usize {
+        let data_as_str = self.as_str();
+        data_as_str
+            .chars()
+            .position(|character| character == Self::IGNORED_CHAR)
+            .unwrap_or_else(|| data_as_str.len())
+    }
+
+    fn decimal_digits_with(&self) -> usize {
+        match self {
+            Self::RealOrInt(data_as_str) => data_as_str
+                .chars()
+                .rev()
+                .position(|character| character == Self::IGNORED_CHAR)
+                .unwrap_or_else(|| 0),
+
+            Self::Binary(_) => 0,
+        }
+    }
 }
 
 #[derive(Error, Clone, Debug, PartialEq)]
@@ -131,6 +151,30 @@ mod test {
 
         let data_item = DataItem::from_str("00010").expect("data item input is invalid");
         assert_eq!(data_item.is_binary(), true);
+    }
+
+    #[test]
+    fn test_num_digits_width() {
+        let data_item = DataItem::from_str("00001").expect("data item input is invalid");
+        assert_eq!(data_item.num_digits_width(), 5);
+
+        let data_item = DataItem::from_str("00001.1").expect("data item input is invalid");
+        assert_eq!(data_item.num_digits_width(), 5);
+
+        let data_item = DataItem::from_str("00001.").expect("data item input is invalid");
+        assert_eq!(data_item.num_digits_width(), 5);
+    }
+
+    #[test]
+    fn test_decimal_digits_width() {
+        let data_item = DataItem::from_str("00001").expect("data item input is invalid");
+        assert_eq!(data_item.decimal_digits_with(), 0);
+
+        let data_item = DataItem::from_str("00001.1").expect("data item input is invalid");
+        assert_eq!(data_item.decimal_digits_with(), 1);
+
+        let data_item = DataItem::from_str("00001.").expect("data item input is invalid");
+        assert_eq!(data_item.decimal_digits_with(), 0);
     }
 
     #[test]
