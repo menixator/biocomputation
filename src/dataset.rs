@@ -59,6 +59,13 @@ mod test {
             Err(DataItemParseError::NotValidAscii)
         );
     }
+
+    #[test]
+    fn test_char_at() {
+        let data_item = DataItem::from_str("12345").expect("data item input is invalid");
+        assert_eq!(data_item.char_at(0), Some('1'));
+        assert_eq!(data_item.char_at(5), None);
+    }
 }
 
 /// A dataset is a container contains a list of `DataItem`s
