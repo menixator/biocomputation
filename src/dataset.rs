@@ -67,8 +67,26 @@ impl FromStr for DataItem {
 mod test {
     use super::*;
     #[test]
-    fn test_ascii() {
+    fn test_ascii_digit() {
         assert_eq!("00000".parse(), Ok(DataItem("00000".to_owned())));
+    }
+
+    #[test]
+    fn test_ascii_non_digit() {
+        assert_eq!("abc".parse::<DataItem>(), Err(DataItemParseError::NotDigit));
+    }
+
+    #[test]
+    fn test_one_ignored() {
+        assert_eq!("000.".parse::<DataItem>(), Ok(DataItem("000.".to_owned())));
+    }
+
+    #[test]
+    fn test_multiple_ignored() {
+        assert_eq!(
+            "000.1.1".parse::<DataItem>(),
+            Err(DataItemParseError::MultipleIngoredChar)
+        );
     }
 
     #[test]
