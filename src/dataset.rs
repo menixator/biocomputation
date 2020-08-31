@@ -29,6 +29,12 @@ impl DataItem {
 pub enum DataItemParseError {
     #[error("not valid ascii")]
     NotValidAscii,
+
+    #[error("not valid ascii digit")]
+    NotAsciiDigit,
+
+    #[error("multiple ignored characters present")]
+    MultipleIngoredChar,
 }
 
 // Allow an string types to be converted(falliably) to a DataItem
@@ -38,6 +44,19 @@ impl FromStr for DataItem {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         if !input.is_ascii() {
             return Err(DataItemParseError::NotValidAscii);
+        }
+
+        let mut found_ignored_char = false;
+        // if all characters are digits and only one ignored character is present, allow it
+        for character in input.chars() {
+            if character == Self::IGNORED_CHAR {
+                if found_ignored_char {
+                    return Err(DataItemParseError::MultipleIngoredChar);
+                }
+                found_ignored_char = true;
+            } else if !character.is_ascii_digit() {
+                return Err(DataItemParseError::NotAsciiDigit);
+            }
         }
 
         Ok(DataItem(input.to_owned()))
