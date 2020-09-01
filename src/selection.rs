@@ -1,5 +1,5 @@
 use crate::candidate::Candidate;
-use crate::population::CandidateFitness;
+use crate::candidate::CandidateFitness;
 use rand::{self, Rng};
 use thiserror::Error;
 

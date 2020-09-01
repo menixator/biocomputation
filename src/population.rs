@@ -1,15 +1,10 @@
+use crate::candidate::CandidateFitness;
 use crate::candidate::{Candidate, FitnessCalculationError};
 use crate::dataitem::DataItem;
 use crate::dataset::DataSet;
 use crate::popgenspec::PopGenSpec;
 use rand::{self, Rng};
 use std::collections::HashSet;
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct CandidateFitness<'a> {
-    pub candidate: &'a Candidate,
-    pub fitness: usize,
-}
 
 /// A population is a collection of candidates
 #[derive(Debug)]

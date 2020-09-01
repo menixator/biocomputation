@@ -18,6 +18,12 @@ pub enum FitnessCalculationError {
     RuleEvaluationError(#[from] RuleEvaluationError),
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct CandidateFitness<'a> {
+    pub candidate: &'a Candidate,
+    pub fitness: usize,
+}
+
 impl Candidate {
     pub fn rules(&self) -> &HashSet<Rule> {
         &self.rules
