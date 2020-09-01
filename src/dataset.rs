@@ -15,6 +15,10 @@ lazy_static! {
 pub struct DataSet(Vec<DataItem>);
 
 impl DataSet {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
     pub fn push(&mut self, data_item: DataItem) -> Result<(), DataSetError> {
         if self.0.len() > 0 {
             if data_item.is_binary() != self.0[0].is_binary() {
@@ -28,6 +32,30 @@ impl DataSet {
         self.0.push(data_item);
         Ok(())
     }
+
+    pub fn split_at_percentage(
+        self,
+        percentage: usize,
+    ) -> Result<(DataSet, DataSet), DataSetError> {
+        if percentage > 100 {
+            return Err(DataSetError::InvalidPercentage);
+        }
+        let percentage = percentage as f64;
+        let split_index = (percentage / 100.0) * self.0.len() as f64;
+        let split_index = split_index as usize;
+
+        let mut first_vec = Vec::with_capacity(split_index);
+        let mut second_vec = Vec::with_capacity(self.0.len() - split_index);
+
+        for (index, data_item) in self.0.into_iter().enumerate() {
+            if index < split_index {
+                first_vec.push(data_item);
+            } else {
+                second_vec.push(data_item);
+            }
+        }
+        Ok((DataSet(first_vec), DataSet(second_vec)))
+    }
 }
 
 #[derive(Error, Clone, PartialEq, Debug)]
@@ -37,6 +65,9 @@ pub enum DataSetError {
 
     #[error("length is not consistent")]
     LengthMismatch,
+
+    #[error("percentage should be between 0 and 100")]
+    InvalidPercentage,
 }
 
 #[derive(Error, Clone, PartialEq, Debug)]
