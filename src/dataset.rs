@@ -33,6 +33,14 @@ impl DataSet {
         Ok(())
     }
 
+    pub fn is_binary(&self) -> Option<bool> {
+        self.0.first().map(|v| v.is_binary())
+    }
+
+    pub fn width(&self) -> Option<usize> {
+        self.0.first().map(|v| v.width())
+    }
+
     pub fn split_at_percentage(
         self,
         percentage: usize,
