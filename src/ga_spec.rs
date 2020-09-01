@@ -1,3 +1,5 @@
+use crate::selection::SelectionStrategy;
+
 #[derive(Debug)]
 pub struct GaSpec {
     pub(crate) max_candidates: usize,
@@ -11,6 +13,7 @@ pub struct GaSpec {
     pub(crate) max_rule_constraints: usize,
     pub(crate) min_rule_constraints: usize,
     pub(crate) max_rule_constraint_generation_consecutive_fail: usize,
+    pub(crate) selection_strategy: SelectionStrategy,
 
     pub(crate) alphabet: &'static str,
 }
