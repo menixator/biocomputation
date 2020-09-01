@@ -190,9 +190,9 @@ impl CrossoverStrategy {
                 for (a, b) in matchup {
                     // TODO: values over 100 will fail silently
                     let split_at_a =
-                        ((*split_at as f64 / 100.0) as usize) * a.candidate.rules().len();
+                        ((*split_at as f64 / 100.0) * a.candidate.rules().len() as f64) as usize;
                     let split_at_b_no_mirror =
-                        ((*split_at as f64 / 100.0) as usize) * b.candidate.rules().len();
+                        ((*split_at as f64 / 100.0) * b.candidate.rules().len() as f64) as usize;
 
                     let split_at_b = match self.options.mirroring {
                         MirroringStrategy::MirrorIfAsexual => {
@@ -323,20 +323,25 @@ impl CrossoverStrategy {
                     let mut first_child: HashSet<Rule> = HashSet::new();
                     let mut second_child: HashSet<Rule> = HashSet::new();
 
-                    for (split_at_a_start, split_at_a_end) in split_at.iter() {
-                        let split_at_a_start = ((*split_at_a_start as f64 / 100.0) as usize)
-                            * a.candidate.rules().len();
-                        let split_at_a_end =
-                            ((*split_at_a_end as f64 / 100.0) as usize) * a.candidate.rules().len();
+                    for (percent_split_at_a_start, percent_split_at_a_end) in split_at.iter() {
+                        let split_at_a_start = (((*percent_split_at_a_start as f64 / 100.0) as f64)
+                            * a.candidate.rules().len() as f64)
+                            as usize;
+                        let split_at_a_end = (((*percent_split_at_a_end as f64 / 100.0) as f64)
+                            * a.candidate.rules().len() as f64)
+                            as usize;
 
                         let split_at_a_start = std::cmp::min(split_at_a_start, split_at_a_end);
                         let split_at_a_end = std::cmp::max(split_at_a_start, split_at_a_end);
 
-                        let split_at_b_start_no_mirror = ((split_at_a_start as f64 / 100.0)
-                            as usize)
-                            * b.candidate.rules().len();
-                        let split_at_b_end_no_mirror =
-                            ((split_at_a_end as f64 / 100.0) as usize) * b.candidate.rules().len();
+                        let split_at_b_start_no_mirror =
+                            (((*percent_split_at_a_start as f64 / 100.0) as f64)
+                                * b.candidate.rules().len() as f64)
+                                as usize;
+                        let split_at_b_end_no_mirror = (((*percent_split_at_a_end as f64 / 100.0)
+                            as f64)
+                            * b.candidate.rules().len() as f64)
+                            as usize;
 
                         let split_at_b_start_no_mirror =
                             std::cmp::min(split_at_b_start_no_mirror, split_at_b_end_no_mirror);
