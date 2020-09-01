@@ -6,13 +6,19 @@ use thiserror::Error;
 #[derive(Debug, Clone)]
 pub struct SelectionStrategy {
     options: SelectionStrategyCommonOptions,
-    variant: SelectionStrategyKind,
+    variant: SelectionStrategyVariant,
+}
+
+impl SelectionStrategy {
+    pub fn new(variant: SelectionStrategyVariant, options: SelectionStrategyCommonOptions) -> Self {
+        Self { options, variant }
+    }
 }
 
 #[derive(Debug, Clone)]
-pub struct DuplicateHandlingStrategy {
-    allow: bool,
-    retries: usize,
+pub enum DuplicateHandlingStrategy {
+    Allow,
+    Disallow { retries: usize },
 }
 
 #[derive(Debug, Clone)]
@@ -23,8 +29,14 @@ pub struct SelectionStrategyCommonOptions {
     duplicates: DuplicateHandlingStrategy,
 }
 
+impl SelectionStrategyCommonOptions {
+    pub fn new(duplicates: DuplicateHandlingStrategy, size: usize) -> Self {
+        Self { duplicates, size }
+    }
+}
+
 #[derive(Debug, Clone)]
-pub enum SelectionStrategyKind {
+pub enum SelectionStrategyVariant {
     Roulette(RouletteSelection),
     Tournament(TournamentSelection),
 }
@@ -52,6 +64,12 @@ pub struct TournamentSelection {
     size: usize,
 }
 
+impl TournamentSelection {
+    pub fn new(size: usize) -> Self {
+        Self { size }
+    }
+}
+
 impl Selection for TournamentSelection {
     fn select<'a>(
         &'_ self,
@@ -74,16 +92,18 @@ impl Selection for TournamentSelection {
                     let mut failures = 0;
                     loop {
                         let rng = rng.gen_range(0, candidates.len());
-                        if options.duplicates.allow {
-                            break Ok(rng);
-                        }
-                        if results.contains(&&candidates[rng]) {
-                            failures += 1;
-                            if failures >= options.duplicates.retries {
-                                break Err(SelectionError::RngFail);
+                        match options.duplicates {
+                            DuplicateHandlingStrategy::Allow => break Ok(rng),
+                            DuplicateHandlingStrategy::Disallow { retries } => {
+                                if results.contains(&&candidates[rng]) {
+                                    failures += 1;
+                                    if failures >= retries {
+                                        break Err(SelectionError::RngFail);
+                                    }
+                                } else {
+                                    break Ok(rng);
+                                }
                             }
-                        } else {
-                            break Ok(rng);
                         }
                     }
                 }?;
@@ -135,14 +155,17 @@ impl Selection for RouletteSelection {
             }
             let selected = selected.ok_or(SelectionError::EmptyCandidates)?;
             // Check if it is a duplicate
-            if !options.duplicates.allow && results.contains(selected) {
-                failures += 1;
-                if failures >= options.duplicates.retries {
-                    return Err(SelectionError::RngFail);
+            match (options.duplicates, results.contains(selected)) {
+                (DuplicateHandlingStrategy::Disallow { retries }, true) => {
+                    failures += 1;
+                    if failures >= retries {
+                        return Err(SelectionError::RngFail);
+                    }
                 }
-            } else {
-                failures = 0;
-                results.push(selected.clone());
+                _ => {
+                    failures = 0;
+                    results.push(selected.clone());
+                }
             }
         }
         Ok(results)
