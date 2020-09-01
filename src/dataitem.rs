@@ -1,5 +1,13 @@
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::str::FromStr;
 use thiserror::Error;
+
+lazy_static! {
+    static ref DATA_ITEM_REGEX: Regex =
+        Regex::new(r##"^((?P<binary>[01]{5,6})|((0\.(?P<real_first>\d{6}))( (0\.(?P<real_second>\d{6})))( (0\.(?P<real_third>\d{6})))( (0\.(?P<real_fourth>\d{6})))( (0\.(?P<real_fifth>\d{6})))( (0\.(?P<real_sixth>\d{6})))))$"##)
+            .unwrap();
+}
 
 /// A `DataItem` is just an ascii string
 /// While working with this struct, it is assumed that all the characters in the string are:
@@ -26,14 +34,6 @@ impl DataItem {
         self.as_str().chars().nth(index)
     }
 
-    /// Checks if a particular index is ignored. Returns false is the index is out of range.
-    fn is_index_ignored(&self, index: usize) -> bool {
-        match self.char_at(index) {
-            None => false,
-            Some(character) => character == Self::IGNORED_CHAR,
-        }
-    }
-
     fn is_binary(&self) -> bool {
         match self {
             Self::Binary(_) => true,
@@ -41,31 +41,15 @@ impl DataItem {
         }
     }
 
-    fn is_real_or_int(&self) -> bool {
+    fn is_real(&self) -> bool {
         match self {
             Self::Real(_) => true,
             _ => false,
         }
     }
 
-    fn num_digits_width(&self) -> usize {
-        let data_as_str = self.as_str();
-        data_as_str
-            .chars()
-            .position(|character| character == Self::IGNORED_CHAR)
-            .unwrap_or_else(|| data_as_str.len())
-    }
-
-    fn decimal_digits_with(&self) -> usize {
-        match self {
-            Self::Real(data_as_str) => data_as_str
-                .chars()
-                .rev()
-                .position(|character| character == Self::IGNORED_CHAR)
-                .unwrap_or_else(|| 0),
-
-            Self::Binary(_) => 0,
-        }
+    fn width(&self) -> usize {
+        self.as_str().len()
     }
 }
 
@@ -74,11 +58,8 @@ pub enum DataItemParseError {
     #[error("not valid ascii")]
     NotValidAscii,
 
-    #[error("not a digit")]
-    NotDigit,
-
-    #[error("multiple ignored characters present")]
-    MultipleIngoredChar,
+    #[error("invalid format")]
+    InvalidFormat,
 }
 
 // Allow an string types to be converted(falliably) to a DataItem
@@ -90,30 +71,55 @@ impl FromStr for DataItem {
             return Err(DataItemParseError::NotValidAscii);
         }
 
-        let mut is_binary = true;
-        let mut found_ignored_char = false;
-        // if all characters are digits and only one ignored character is present, allow it
-        for character in input.chars() {
-            if character == Self::IGNORED_CHAR {
-                if found_ignored_char {
-                    return Err(DataItemParseError::MultipleIngoredChar);
-                }
-                found_ignored_char = true;
-            } else if !character.is_ascii_digit() {
-                return Err(DataItemParseError::NotDigit);
-            } else {
-                if is_binary {
-                    is_binary = character == '0' || character == '1';
+        match DATA_ITEM_REGEX.captures(input) {
+            Some(captures) => {
+                if let Some(binary) = captures.name("binary") {
+                    Ok(DataItem::Binary(binary.as_str().to_owned()))
+                } else if let (
+                    Some(first),
+                    Some(second),
+                    Some(third),
+                    Some(fourth),
+                    Some(fifth),
+                    Some(sixth),
+                ) = (
+                    captures.name("real_first"),
+                    captures.name("real_second"),
+                    captures.name("real_third"),
+                    captures.name("real_fourth"),
+                    captures.name("real_fifth"),
+                    captures.name("real_sixth"),
+                ) {
+                    let first = first.as_str();
+                    let second = second.as_str();
+                    let third = third.as_str();
+                    let fourth = fourth.as_str();
+                    let fifth = fifth.as_str();
+                    let sixth = sixth.as_str();
+
+                    let mut input = String::with_capacity(
+                        first.len()
+                            + second.len()
+                            + third.len()
+                            + fourth.len()
+                            + fifth.len()
+                            + sixth.len(),
+                    );
+
+                    input.push_str(first);
+                    input.push_str(second);
+                    input.push_str(third);
+                    input.push_str(fourth);
+                    input.push_str(fifth);
+                    input.push_str(sixth);
+
+                    Ok(DataItem::Real(input))
+                } else {
+                    unreachable!("shouldn't be reached")
                 }
             }
+            None => Err(DataItemParseError::InvalidFormat),
         }
-
-        let input = input.to_owned();
-        Ok(if is_binary && !found_ignored_char {
-            DataItem::Binary(input)
-        } else {
-            DataItem::Real(input)
-        })
     }
 }
 
@@ -127,26 +133,26 @@ mod test {
 
     #[test]
     fn test_non_digit() {
-        assert_eq!("abc".parse::<DataItem>(), Err(DataItemParseError::NotDigit));
+        assert_eq!(
+            "abc".parse::<DataItem>(),
+            Err(DataItemParseError::InvalidFormat)
+        );
     }
 
     #[test]
     fn test_one_ignored() {
         assert_eq!(
-            "000.".parse::<DataItem>(),
-            Ok(DataItem::Real("000.".to_owned()))
+            "0.981136 0.369132 0.498354 0.067417 0.422276 0.803662".parse::<DataItem>(),
+            Ok(DataItem::Real(
+                "981136369132498354067417422276803662".to_owned()
+            ))
         );
     }
 
     #[test]
     fn test_is_binary() {
-        let data_item = DataItem::from_str("0123.0").expect("data item input is invalid");
-        assert_eq!(data_item.is_binary(), false);
-
-        let data_item = DataItem::from_str("01230").expect("data item input is invalid");
-        assert_eq!(data_item.is_binary(), false);
-
-        let data_item = DataItem::from_str("00010.1").expect("data item input is invalid");
+        let data_item = DataItem::from_str("0.981136 0.369132 0.498354 0.067417 0.422276 0.803662")
+            .expect("data item input is invalid");
         assert_eq!(data_item.is_binary(), false);
 
         let data_item = DataItem::from_str("00010").expect("data item input is invalid");
@@ -156,43 +162,11 @@ mod test {
     #[test]
     fn test_num_digits_width() {
         let data_item = DataItem::from_str("00001").expect("data item input is invalid");
-        assert_eq!(data_item.num_digits_width(), 5);
+        assert_eq!(data_item.width(), 5);
 
-        let data_item = DataItem::from_str("00001.1").expect("data item input is invalid");
-        assert_eq!(data_item.num_digits_width(), 5);
-
-        let data_item = DataItem::from_str("00001.").expect("data item input is invalid");
-        assert_eq!(data_item.num_digits_width(), 5);
-    }
-
-    #[test]
-    fn test_decimal_digits_width() {
-        let data_item = DataItem::from_str("00001").expect("data item input is invalid");
-        assert_eq!(data_item.decimal_digits_with(), 0);
-
-        let data_item = DataItem::from_str("00001.1").expect("data item input is invalid");
-        assert_eq!(data_item.decimal_digits_with(), 1);
-
-        let data_item = DataItem::from_str("00001.").expect("data item input is invalid");
-        assert_eq!(data_item.decimal_digits_with(), 0);
-    }
-
-    #[test]
-    fn test_is_index_ignored() {
-        let data_item = DataItem::from_str("0123.0").expect("data item input is invalid");
-        assert_eq!(data_item.is_index_ignored(0), false);
-        // Index in range
-        assert_eq!(data_item.is_index_ignored(4), true);
-        // Index out of range
-        assert_eq!(data_item.is_index_ignored(6), false);
-    }
-
-    #[test]
-    fn test_multiple_ignored() {
-        assert_eq!(
-            "000.1.1".parse::<DataItem>(),
-            Err(DataItemParseError::MultipleIngoredChar)
-        );
+        let data_item = DataItem::from_str("0.981136 0.369132 0.498354 0.067417 0.422276 0.803662")
+            .expect("data item input is invalid");
+        assert_eq!(data_item.width(), 36);
     }
 
     #[test]
@@ -205,8 +179,9 @@ mod test {
 
     #[test]
     fn test_char_at() {
-        let data_item = DataItem::from_str("12345").expect("data item input is invalid");
-        assert_eq!(data_item.char_at(0), Some('1'));
-        assert_eq!(data_item.char_at(5), None);
+        let data_item = DataItem::from_str("0.981136 0.369132 0.498354 0.067417 0.422276 0.803662")
+            .expect("data item input is invalid");
+        assert_eq!(data_item.char_at(0), Some('9'));
+        assert_eq!(data_item.char_at(37), None);
     }
 }
