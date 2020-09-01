@@ -8,7 +8,7 @@ use thiserror::Error;
 #[derive(Debug, PartialEq, Clone)]
 pub enum DataItem {
     Binary(String),
-    RealOrInt(String),
+    Real(String),
 }
 
 impl DataItem {
@@ -17,7 +17,7 @@ impl DataItem {
     pub fn as_str(&self) -> &str {
         match self {
             Self::Binary(binary) => binary,
-            Self::RealOrInt(real) => real,
+            Self::Real(real) => real,
         }
     }
 
@@ -43,7 +43,7 @@ impl DataItem {
 
     fn is_real_or_int(&self) -> bool {
         match self {
-            Self::RealOrInt(_) => true,
+            Self::Real(_) => true,
             _ => false,
         }
     }
@@ -58,7 +58,7 @@ impl DataItem {
 
     fn decimal_digits_with(&self) -> usize {
         match self {
-            Self::RealOrInt(data_as_str) => data_as_str
+            Self::Real(data_as_str) => data_as_str
                 .chars()
                 .rev()
                 .position(|character| character == Self::IGNORED_CHAR)
@@ -112,7 +112,7 @@ impl FromStr for DataItem {
         Ok(if is_binary && !found_ignored_char {
             DataItem::Binary(input)
         } else {
-            DataItem::RealOrInt(input)
+            DataItem::Real(input)
         })
     }
 }
@@ -134,7 +134,7 @@ mod test {
     fn test_one_ignored() {
         assert_eq!(
             "000.".parse::<DataItem>(),
-            Ok(DataItem::RealOrInt("000.".to_owned()))
+            Ok(DataItem::Real("000.".to_owned()))
         );
     }
 
