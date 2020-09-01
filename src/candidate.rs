@@ -1,8 +1,10 @@
+use crate::dataset::DataSet;
 use crate::popgenspec::PopGenSpec;
-use crate::rule::Rule;
+use crate::rule::{Rule, RuleEvaluationError};
 use rand::{self, Rng};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
+use thiserror::Error;
 
 /// A candidate is a collection of rules
 #[derive(PartialEq, Debug, Clone, Eq)]
@@ -10,9 +12,36 @@ pub struct Candidate {
     rules: HashSet<Rule>,
 }
 
+#[derive(Error, Debug)]
+pub enum FitnessCalculationError {
+    #[error(transparent)]
+    RuleEvaluationError(#[from] RuleEvaluationError),
+}
+
 impl Candidate {
     pub fn rules(&self) -> &HashSet<Rule> {
         &self.rules
+    }
+
+    /// Fitness is simply the number of test data a candidate's ruleset can classify correctly
+    pub fn calculate_fitness(&self, data_set: &DataSet) -> Result<usize, FitnessCalculationError> {
+        let mut fitness = 0;
+
+        for data_item in data_set.as_ref() {
+            for rule in &self.rules {
+                let result = if rule.evaluate(data_item.as_str())? {
+                    "1"
+                } else {
+                    "0"
+                };
+
+                if result == data_item.output() {
+                    fitness += 1;
+                    break;
+                }
+            }
+        }
+        Ok(fitness)
     }
 
     pub fn generate<T: Rng>(mut rng: &mut T, spec: &PopGenSpec) -> Self {
