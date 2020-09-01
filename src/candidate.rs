@@ -25,6 +25,12 @@ pub struct CandidateFitness<'a> {
 }
 
 impl Candidate {
+    pub fn from_rules(rules: &HashSet<Rule>) -> Self {
+        Self {
+            rules: rules.clone(),
+        }
+    }
+
     pub fn rules(&self) -> &HashSet<Rule> {
         &self.rules
     }
