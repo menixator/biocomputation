@@ -155,10 +155,10 @@ impl Selection for RouletteSelection {
             }
             let selected = selected.ok_or(SelectionError::EmptyCandidates)?;
             // Check if it is a duplicate
-            match (options.duplicates, results.contains(selected)) {
+            match (&options.duplicates, results.contains(selected)) {
                 (DuplicateHandlingStrategy::Disallow { retries }, true) => {
                     failures += 1;
-                    if failures >= retries {
+                    if failures >= *retries {
                         return Err(SelectionError::RngFail);
                     }
                 }
