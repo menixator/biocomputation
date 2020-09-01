@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use std::string::ToString;
+use thiserror::Error;
 
 /// A rule is a list of checks to do to yield 1
 #[derive(Eq, PartialEq, Clone)]
@@ -11,9 +12,29 @@ pub struct Rule {
     constraints: HashMap<usize, char>,
 }
 
+#[derive(Error, Debug)]
+pub enum RuleEvaluationError {
+    #[error("the rule contains constraints that is out of the index range of the input")]
+    IndexOutOfRange,
+}
+
 impl Rule {
     pub fn constraints(&self) -> &HashMap<usize, char> {
         &self.constraints
+    }
+
+    pub fn evaluate(&self, input: &str) -> Result<bool, RuleEvaluationError> {
+        for (index, character) in &self.constraints {
+            if input
+                .chars()
+                .nth(*index)
+                .ok_or(RuleEvaluationError::IndexOutOfRange)?
+                != *character
+            {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
 
     pub fn len(&self) -> usize {
