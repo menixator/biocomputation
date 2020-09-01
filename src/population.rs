@@ -69,3 +69,9 @@ impl Population {
         }
     }
 }
+
+impl std::convert::AsRef<HashSet<Candidate>> for Population {
+    fn as_ref(&self) -> &HashSet<Candidate> {
+        &self.candidates
+    }
+}
