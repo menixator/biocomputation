@@ -5,6 +5,12 @@ use crate::popgenspec::PopGenSpec;
 use rand::{self, Rng};
 use std::collections::HashSet;
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct CandidateFitness<'a> {
+    pub candidate: &'a Candidate,
+    pub fitness: usize,
+}
+
 /// A population is a collection of candidates
 #[derive(Debug)]
 pub struct Population {
@@ -28,11 +34,15 @@ impl Population {
     pub fn calculate_fitness<'a>(
         &self,
         data_set: &'_ DataSet,
-    ) -> Result<Vec<(&Candidate, usize)>, FitnessCalculationError> {
+    ) -> Result<Vec<CandidateFitness>, FitnessCalculationError> {
         let mut fitness_values = Vec::with_capacity(self.candidates.len());
         for candidate in &self.candidates {
-            fitness_values.push((candidate, candidate.calculate_fitness(&data_set)?));
+            fitness_values.push(CandidateFitness {
+                candidate,
+                fitness: candidate.calculate_fitness(&data_set)?,
+            });
         }
+        fitness_values.sort_by_key(|candidate_with_fitness| candidate_with_fitness.fitness);
         Ok(fitness_values)
     }
 
