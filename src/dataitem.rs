@@ -22,6 +22,13 @@ pub enum DataItem {
 impl DataItem {
     pub const IGNORED_CHAR: char = '.';
 
+    pub fn output(&self) -> &str {
+        match self {
+            Self::Binary { output, .. } => output,
+            Self::Real { output, .. } => output,
+        }
+    }
+
     pub fn as_str(&self) -> &str {
         match self {
             Self::Binary { input, .. } => input,
