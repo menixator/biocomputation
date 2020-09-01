@@ -66,6 +66,12 @@ impl DataSet {
     }
 }
 
+impl std::convert::AsRef<Vec<DataItem>> for DataSet {
+    fn as_ref(&self) -> &Vec<DataItem> {
+        &self.0
+    }
+}
+
 #[derive(Error, Clone, PartialEq, Debug)]
 pub enum DataSetError {
     #[error("found different kinds of data")]
