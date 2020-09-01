@@ -38,7 +38,7 @@ pub enum SelectionError {
     RngFail,
 }
 
-trait Selection {
+pub trait Selection {
     fn select<'a>(
         &'_ self,
         candidates: &Vec<CandidateFitness<'a>>,

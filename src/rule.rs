@@ -1,4 +1,4 @@
-use crate::popgenspec::PopGenSpec;
+use crate::ga_spec::GaSpec;
 use rand::{self, Rng};
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
@@ -41,7 +41,7 @@ impl Rule {
         self.constraints.len()
     }
 
-    pub fn generate<T: Rng>(mut rng: &mut T, spec: &PopGenSpec) -> Self {
+    pub fn generate<T: Rng>(mut rng: &mut T, spec: &GaSpec) -> Self {
         let number_of_constraints: usize =
             rng.gen_range(spec.min_rule_constraints, spec.max_rule_constraints);
         let mut constraints = HashMap::with_capacity(number_of_constraints);

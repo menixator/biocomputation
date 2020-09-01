@@ -2,7 +2,7 @@ use crate::candidate::CandidateFitness;
 use crate::candidate::{Candidate, FitnessCalculationError};
 use crate::dataitem::DataItem;
 use crate::dataset::DataSet;
-use crate::popgenspec::PopGenSpec;
+use crate::ga_spec::GaSpec;
 use rand::{self, Rng};
 use std::collections::HashSet;
 
@@ -42,7 +42,7 @@ impl Population {
     }
 
     // Generates a a random population for a given data set
-    pub fn generate(spec: &PopGenSpec) -> Self {
+    pub fn generate(spec: &GaSpec) -> Self {
         let mut candidates = HashSet::with_capacity(spec.max_candidates);
         let mut consecutive_fails = 0;
         let mut rng = rand::thread_rng();

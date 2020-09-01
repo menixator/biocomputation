@@ -1,5 +1,5 @@
 use crate::dataset::DataSet;
-use crate::popgenspec::PopGenSpec;
+use crate::ga_spec::GaSpec;
 use crate::rule::{Rule, RuleEvaluationError};
 use rand::{self, Rng};
 use std::collections::HashSet;
@@ -50,7 +50,7 @@ impl Candidate {
         Ok(fitness)
     }
 
-    pub fn generate<T: Rng>(mut rng: &mut T, spec: &PopGenSpec) -> Self {
+    pub fn generate<T: Rng>(mut rng: &mut T, spec: &GaSpec) -> Self {
         let number_of_rules: usize = rng.gen_range(spec.min_rules, spec.max_rules);
         let mut rules = HashSet::with_capacity(number_of_rules);
 

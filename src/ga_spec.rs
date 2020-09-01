@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub struct PopGenSpec {
+pub struct GaSpec {
     pub(crate) max_candidates: usize,
     pub(crate) min_candidates: usize,
     pub(crate) max_candidate_generation_consecutive_fail: usize,
