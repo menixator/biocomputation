@@ -83,6 +83,9 @@ pub enum DataSetParseError {
     #[error("an io error occured")]
     IoError(std::io::ErrorKind),
 
+    #[error("file has no data")]
+    NoData,
+
     #[error("failed to parse data item due to {source}")]
     DataItemParseError {
         line_number: usize,
@@ -124,6 +127,9 @@ impl DataSet {
                     line_number,
                     source,
                 })?;
+        }
+        if data_set.len() == 0 {
+            return Err(DataSetParseError::NoData);
         }
         Ok(data_set)
     }
