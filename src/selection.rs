@@ -13,6 +13,20 @@ impl SelectionStrategy {
     pub fn new(variant: SelectionStrategyVariant, options: SelectionStrategyCommonOptions) -> Self {
         Self { options, variant }
     }
+
+    pub fn select<'a>(
+        &'_ self,
+        candidates: &Vec<CandidateFitness<'a>>,
+    ) -> Result<Vec<CandidateFitness<'a>>, SelectionError> {
+        match &self.variant {
+            SelectionStrategyVariant::Tournament(tourney) => {
+                tourney.select(candidates, &self.options)
+            }
+            SelectionStrategyVariant::Roulette(roulette) => {
+                roulette.select(candidates, &self.options)
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
