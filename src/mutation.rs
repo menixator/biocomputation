@@ -5,22 +5,25 @@ use crate::rule::Rule;
 use rand::{self, Rng};
 use thiserror::Error;
 
+#[derive(Clone, Debug)]
 pub struct MutationStrategy {
-    options: MutationStrategyCommonOptions,
-    variant: MutationStrategyVariant,
+    pub options: MutationStrategyCommonOptions,
+    pub variant: MutationStrategyVariant,
 }
 
+#[derive(Clone, Debug)]
 pub enum MutationStrategyVariant {
     ConstraintSwap { delta: isize },
     ConstraintRandomize { swap_if_fail: bool, retries: usize },
     ConstraintValueRandomize,
 }
 
+#[derive(Clone, Debug)]
 pub struct MutationStrategyCommonOptions {
-    chance: Option<usize>,
-    chance_per_candidate: Option<usize>,
-    chance_per_rule: Option<usize>,
-    chance_per_constraint: Option<usize>,
+    pub chance: Option<usize>,
+    pub chance_per_candidate: Option<usize>,
+    pub chance_per_rule: Option<usize>,
+    pub chance_per_constraint: Option<usize>,
 }
 
 #[derive(Error, Debug)]
