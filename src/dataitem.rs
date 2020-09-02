@@ -5,7 +5,7 @@ use thiserror::Error;
 
 lazy_static! {
     static ref DATA_ITEM_REGEX: Regex =
-        Regex::new(r##"^((?P<binary>[01]{5,6})|((0\.(?P<real_first>\d{6}))( (0\.(?P<real_second>\d{6})))( (0\.(?P<real_third>\d{6})))( (0\.(?P<real_fourth>\d{6})))( (0\.(?P<real_fifth>\d{6})))( (0\.(?P<real_sixth>\d{6}))))) (?P<output>[01])$"##)
+        Regex::new(r##"^((?P<binary>[01]{5,6})|((?P<real_first>0\.\d{6})( (?P<real_second>0\.\d{6}))( (?P<real_third>0\.\d{6}))( (?P<real_fourth>0\.\d{6}))( (?P<real_fifth>0\.\d{6}))( (?P<real_sixth>0\.\d{6})))) (?P<output>[01])$"##)
             .unwrap();
 }
 
@@ -14,45 +14,23 @@ lazy_static! {
 ///     1. Valid uf8(Rust takes care of this since all the Strings in rust are valid ut8)
 ///     2. Ascii digits or dot
 #[derive(Debug, PartialEq, Clone)]
-pub enum DataItem {
-    Binary { input: String, output: String },
-    Real { input: String, output: String },
+pub struct DataItem {
+    input: String,
+    output: String,
 }
 
 impl DataItem {
-    pub const IGNORED_CHAR: char = '.';
-
     pub fn output(&self) -> &str {
-        match self {
-            Self::Binary { output, .. } => output,
-            Self::Real { output, .. } => output,
-        }
+        &self.output
     }
 
     pub fn as_str(&self) -> &str {
-        match self {
-            Self::Binary { input, .. } => input,
-            Self::Real { input, .. } => input,
-        }
+        &self.input
     }
 
     /// Gets a character at an index. Returns none if it is out of range
     pub fn char_at(&self, index: usize) -> Option<char> {
         self.as_str().chars().nth(index)
-    }
-
-    pub fn is_binary(&self) -> bool {
-        match self {
-            Self::Binary { .. } => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_real(&self) -> bool {
-        match self {
-            Self::Real { .. } => true,
-            _ => false,
-        }
     }
 
     pub fn width(&self) -> usize {
@@ -67,6 +45,9 @@ pub enum DataItemParseError {
 
     #[error("invalid format")]
     InvalidFormat,
+
+    #[error("float parse error")]
+    FloatParseError(#[from] std::num::ParseFloatError),
 }
 
 // Allow an string types to be converted(falliably) to a DataItem
@@ -83,7 +64,7 @@ impl FromStr for DataItem {
                 if let (Some(binary), Some(output)) =
                     (captures.name("binary"), captures.name("output"))
                 {
-                    Ok(DataItem::Binary {
+                    Ok(DataItem {
                         input: binary.as_str().to_owned(),
                         output: output.as_str().to_owned(),
                     })
@@ -104,30 +85,21 @@ impl FromStr for DataItem {
                     captures.name("real_sixth"),
                     captures.name("output"),
                 ) {
-                    let first = first.as_str();
-                    let second = second.as_str();
-                    let third = third.as_str();
-                    let fourth = fourth.as_str();
-                    let fifth = fifth.as_str();
-                    let sixth = sixth.as_str();
+                    let all = [first, second, third, fourth, fifth, sixth];
+                    let results: Result<Vec<f64>, std::num::ParseFloatError> = all
+                        .iter()
+                        .map(|capture| capture.as_str())
+                        .map(|float_as_str| float_as_str.parse::<f64>())
+                        .collect();
+                    let results = results?;
+                    let input: String = results
+                        .into_iter()
+                        .map(|float_value| float_value.round())
+                        .map(|binary_float| binary_float as usize)
+                        .map(|binary_usize| if binary_usize == 0 { "0" } else { "1" })
+                        .collect();
 
-                    let mut input = String::with_capacity(
-                        first.len()
-                            + second.len()
-                            + third.len()
-                            + fourth.len()
-                            + fifth.len()
-                            + sixth.len(),
-                    );
-
-                    input.push_str(first);
-                    input.push_str(second);
-                    input.push_str(third);
-                    input.push_str(fourth);
-                    input.push_str(fifth);
-                    input.push_str(sixth);
-
-                    Ok(DataItem::Real {
+                    Ok(DataItem {
                         input,
                         output: output.as_str().to_owned(),
                     })
@@ -147,7 +119,7 @@ mod test {
     fn test_binary() {
         assert_eq!(
             "00000 0".parse(),
-            Ok(DataItem::Binary {
+            Ok(DataItem {
                 input: "00000".to_owned(),
                 output: "0".to_owned()
             })
@@ -166,22 +138,11 @@ mod test {
     fn test_one_ignored() {
         assert_eq!(
             "0.981136 0.369132 0.498354 0.067417 0.422276 0.803662 1".parse::<DataItem>(),
-            Ok(DataItem::Real {
-                input: "981136369132498354067417422276803662".to_owned(),
+            Ok(DataItem {
+                input: "100001".to_owned(),
                 output: "1".to_owned()
             })
         );
-    }
-
-    #[test]
-    fn test_is_binary() {
-        let data_item =
-            DataItem::from_str("0.981136 0.369132 0.498354 0.067417 0.422276 0.803662 0")
-                .expect("data item input is invalid");
-        assert_eq!(data_item.is_binary(), false);
-
-        let data_item = DataItem::from_str("00010 1").expect("data item input is invalid");
-        assert_eq!(data_item.is_binary(), true);
     }
 
     #[test]
@@ -192,7 +153,7 @@ mod test {
         let data_item =
             DataItem::from_str("0.981136 0.369132 0.498354 0.067417 0.422276 0.803662 1")
                 .expect("data item input is invalid");
-        assert_eq!(data_item.width(), 36);
+        assert_eq!(data_item.width(), 6);
     }
 
     #[test]

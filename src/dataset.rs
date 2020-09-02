@@ -21,20 +21,12 @@ impl DataSet {
 
     pub fn push(&mut self, data_item: DataItem) -> Result<(), DataSetError> {
         if self.0.len() > 0 {
-            if data_item.is_binary() != self.0[0].is_binary() {
-                return Err(DataSetError::HeterogenousData);
-            }
-
             if data_item.width() != self.0[0].width() {
                 return Err(DataSetError::LengthMismatch);
             }
         }
         self.0.push(data_item);
         Ok(())
-    }
-
-    pub fn is_binary(&self) -> Option<bool> {
-        self.0.first().map(|v| v.is_binary())
     }
 
     pub fn width(&self) -> Option<usize> {
