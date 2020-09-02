@@ -135,7 +135,7 @@ fn run_ga() -> Result<(), Box<dyn std::error::Error>> {
         population.append(offsprings);
         ga_specs.mutation.mutate(&mut population, &ga_specs)?;
 
-        if max.unwrap() == training.len() {
+        if max.unwrap() == training.len() && ga_specs.stop_at_optimum_fitness {
             break;
         }
         population.increment_generation();
