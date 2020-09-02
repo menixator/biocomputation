@@ -15,6 +15,7 @@ pub struct CrossoverStrategy {
 #[derive(Debug)]
 pub struct CrossoverStrategyCommonOptions {
     pub mirroring: MirroringStrategy,
+    pub crossover_rate: usize,
 }
 
 #[derive(Debug)]
@@ -121,6 +122,13 @@ impl CrossoverStrategy {
         candidates: &Vec<CandidateFitness<'_>>,
     ) -> Result<Vec<Candidate>, CrossoverError> {
         let mut results = Vec::new();
+
+        let mut rng = rand::thread_rng();
+
+        if rng.gen_ratio(self.options.crossover_rate as u32, 100) {
+            return Ok(results);
+        }
+
         let matchup = self.matchup(candidates)?;
         match &self.mating_strategy {
             MatingStrategy::SinglePointAtIndex { split_at } => {
