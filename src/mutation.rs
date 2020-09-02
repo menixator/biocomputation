@@ -152,7 +152,8 @@ impl MutationStrategy {
                                 if rng.gen_ratio(1, ga_spec.max_index as u32 + 1) {
                                     None
                                 } else {
-                                    let pos = rng.gen_range(0, ga_spec.max_index as u32) as usize;
+                                    let pos =
+                                        rng.gen_range(0, ga_spec.alphabet.len() as u32) as usize;
                                     let new_char = ga_spec.alphabet.chars().nth(pos).unwrap();
                                     Some(if new_char == *character {
                                         ga_spec.alphabet.chars().nth(pos).unwrap()
@@ -161,7 +162,7 @@ impl MutationStrategy {
                                     })
                                 }
                             } else {
-                                let pos = rng.gen_range(0, ga_spec.max_index as u32) as usize;
+                                let pos = rng.gen_range(0, ga_spec.alphabet.len() as u32) as usize;
                                 let new_char = ga_spec.alphabet.chars().nth(pos).unwrap();
                                 Some(new_char)
                             };
