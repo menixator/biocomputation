@@ -9,7 +9,7 @@ use thiserror::Error;
 /// A candidate is a collection of rules
 #[derive(PartialEq, Debug, Clone, Eq)]
 pub struct Candidate {
-    rules: HashSet<Rule>,
+    rules: Vec<Rule>,
 }
 
 #[derive(Error, Debug)]
@@ -25,17 +25,17 @@ pub struct CandidateFitness<'a> {
 }
 
 impl Candidate {
-    pub fn from_rules(rules: &HashSet<Rule>) -> Self {
+    pub fn from_rules(rules: HashSet<Rule>) -> Self {
         Self {
-            rules: rules.clone(),
+            rules: rules.into_iter().collect(),
         }
     }
 
-    pub fn rules(&self) -> &HashSet<Rule> {
+    pub fn rules(&self) -> &Vec<Rule> {
         &self.rules
     }
 
-    pub fn rules_mut(&mut self) -> &mut HashSet<Rule> {
+    pub fn rules_mut(&mut self) -> &mut Vec<Rule> {
         &mut self.rules
     }
 
@@ -76,7 +76,7 @@ impl Candidate {
                 consecutive_fails = 0;
             }
         }
-        Candidate { rules }
+        Candidate::from_rules(rules)
     }
 }
 
