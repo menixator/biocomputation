@@ -1,0 +1,50 @@
+{
+ "initial_generation": {
+    "candidates": {
+      "min": 10,
+      "max": 16,
+      "rng_fail_retries": 1000
+    },
+    "rules": {
+      "min": 12,
+      "max": 20,
+      "rng_fail_retries": 1000
+    },
+    "constraints": {
+      "min": 3,
+      "max": 5,
+      "rng_fail_retries": 1000
+    }
+  },
+  "max_evolutions": 500,
+  "stop_at_optimum_fitness": true,
+  "selection": {
+    "type": "tournament",
+    "tournament_size": 2,
+    "selection_size": 2,
+
+    "duplicates": {
+      "setting": "allow"
+    }
+  },
+  "crossover" : {
+    "matchup_strategy": {
+      "type" :"next_fittest"
+    },
+    "mating_strategy": {
+      "type": "single_point_at_percentage",
+      "split_at": 50
+    },
+    "mirroring": { 
+      "setting": "mirror_if_asexual"
+    },
+    "crossover_rate": 50
+  },
+  "mutation": {
+    "type": "constraint_value_randomize",
+    "chance": 8,
+    "chance_per_candidate": 8,
+    "chance_per_rule": 100,
+    "chance_per_constraint": 8
+  }
+}
