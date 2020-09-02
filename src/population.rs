@@ -26,8 +26,16 @@ impl Population {
         self.candidates.len()
     }
 
-    fn insert(&mut self, candidate: Candidate) -> bool {
+    pub fn insert(&mut self, candidate: Candidate) -> bool {
         self.candidates.insert(candidate)
+    }
+
+    pub fn contains(&self, candidate: &Candidate) -> bool {
+        self.candidates.contains(&candidate)
+    }
+
+    pub fn remove(&mut self, candidate: &Candidate) -> bool {
+        self.candidates.remove(&candidate)
     }
 
     pub fn calculate_fitness<'a>(
