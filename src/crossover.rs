@@ -7,34 +7,14 @@ use thiserror::Error;
 
 #[derive(Debug)]
 pub struct CrossoverStrategy {
-    matchup_strategy: MatchupStrategy,
-    options: CrossoverStrategyCommonOptions,
-    mating_strategy: MatingStrategy,
-}
-
-impl CrossoverStrategy {
-    pub fn new(
-        matchup_strategy: MatchupStrategy,
-        mating_strategy: MatingStrategy,
-        options: CrossoverStrategyCommonOptions,
-    ) -> Self {
-        Self {
-            matchup_strategy,
-            mating_strategy,
-            options,
-        }
-    }
+    pub matchup_strategy: MatchupStrategy,
+    pub options: CrossoverStrategyCommonOptions,
+    pub mating_strategy: MatingStrategy,
 }
 
 #[derive(Debug)]
 pub struct CrossoverStrategyCommonOptions {
-    mirroring: MirroringStrategy,
-}
-
-impl CrossoverStrategyCommonOptions {
-    pub fn new(mirroring: MirroringStrategy) -> Self {
-        Self { mirroring }
-    }
+    pub mirroring: MirroringStrategy,
 }
 
 #[derive(Debug)]
