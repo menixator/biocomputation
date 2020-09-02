@@ -7,18 +7,26 @@ use std::hash::{Hash, Hasher};
 use thiserror::Error;
 
 /// A candidate is a collection of rules
-#[derive(PartialEq, Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq)]
 pub struct Candidate {
     rules: HashSet<Rule>,
+    mutation_count: usize,
+    birth_generation_id: Option<usize>,
 }
 
-#[derive(Error, Debug)]
+impl PartialEq<Candidate> for Candidate {
+    fn eq(&self, rhs: &Candidate) -> bool {
+        self.rules() == rhs.rules()
+    }
+}
+
+#[derive(Error, Debug, PartialEq, Clone, Copy)]
 pub enum FitnessCalculationError {
     #[error(transparent)]
     RuleEvaluationError(#[from] RuleEvaluationError),
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Copy)]
 pub struct CandidateFitness<'a> {
     pub candidate: &'a Candidate,
     pub fitness: usize,
@@ -28,7 +36,35 @@ impl Candidate {
     pub fn from_rules(rules: &HashSet<Rule>) -> Self {
         Self {
             rules: rules.clone(),
+            mutation_count: 0,
+            birth_generation_id: None,
         }
+    }
+
+    pub fn mutation_count(&self) -> usize {
+        self.mutation_count
+    }
+
+    pub fn set_mutation_count(&mut self, new_mutation_count: usize) {
+        self.mutation_count = new_mutation_count;
+    }
+
+    pub fn increment_mutation_count(&mut self) {
+        self.mutation_count += 1;
+    }
+
+    pub fn age(&mut self, current_generation_id: usize) -> Option<isize> {
+        self.birth_generation_id.clone().map(|birth_generation_id| {
+            current_generation_id as isize - birth_generation_id as isize
+        })
+    }
+
+    pub fn set_birth_generation_id(&mut self, new_birth_generation_id: usize) {
+        self.birth_generation_id = Some(new_birth_generation_id);
+    }
+
+    pub fn birth_generation_id(&self) -> Option<usize> {
+        self.birth_generation_id
     }
 
     pub fn rules(&self) -> &HashSet<Rule> {
@@ -76,7 +112,11 @@ impl Candidate {
                 consecutive_fails = 0;
             }
         }
-        Candidate { rules }
+        Candidate {
+            rules,
+            mutation_count: 0,
+            birth_generation_id: None,
+        }
     }
 }
 

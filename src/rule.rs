@@ -12,7 +12,7 @@ pub struct Rule {
     constraints: HashMap<usize, char>,
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Eq, PartialEq, Clone, Copy)]
 pub enum RuleEvaluationError {
     #[error("the rule contains constraints that is out of the index range of the input")]
     IndexOutOfRange,

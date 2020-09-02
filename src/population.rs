@@ -7,7 +7,7 @@ use rand::{self, Rng};
 use std::collections::HashSet;
 
 /// A population is a collection of candidates
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq)]
 pub struct Population {
     generation: usize,
     candidates: HashSet<Candidate>,
@@ -18,8 +18,6 @@ impl PartialEq<Population> for Population {
         self.candidates() == rhs.candidates()
     }
 }
-
-impl Eq for Population {}
 
 impl Population {
     pub fn generation(&self) -> usize {
