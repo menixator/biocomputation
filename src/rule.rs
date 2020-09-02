@@ -46,24 +46,33 @@ impl Rule {
     }
 
     pub fn generate<T: Rng>(mut rng: &mut T, spec: &GaSpec) -> Self {
-        let number_of_constraints: usize =
-            rng.gen_range(spec.min_rule_constraints, spec.max_rule_constraints);
+        let number_of_constraints: usize = rng.gen_range(
+            spec.initial_generation.constraints.min,
+            spec.initial_generation.constraints.max,
+        );
         let mut constraints = HashMap::with_capacity(number_of_constraints);
 
         let mut consecutive_fails = 0;
 
         while constraints.len() < number_of_constraints {
-            let index: usize = rng.gen_range(0, spec.max_index);
+            let index: usize = rng.gen_range(0, spec.calculated.max_index);
 
             if constraints.contains_key(&index) {
                 consecutive_fails += 1;
-                if consecutive_fails >= spec.max_rule_generation_consecutive_fail {
+                if consecutive_fails >= spec.initial_generation.constraints.rng_fail_retries {
                     break;
                 }
             } else {
                 consecutive_fails = 0;
-                let character_index = rng.gen_range(0, spec.alphabet.len());
-                constraints.insert(index, spec.alphabet.chars().nth(character_index).unwrap());
+                let character_index = rng.gen_range(0, spec.calculated.alphabet.len());
+                constraints.insert(
+                    index,
+                    spec.calculated
+                        .alphabet
+                        .chars()
+                        .nth(character_index)
+                        .unwrap(),
+                );
             }
         }
         Rule { constraints }

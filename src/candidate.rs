@@ -97,7 +97,10 @@ impl Candidate {
     }
 
     pub fn generate<T: Rng>(mut rng: &mut T, spec: &GaSpec) -> Self {
-        let number_of_rules: usize = rng.gen_range(spec.min_rules, spec.max_rules);
+        let number_of_rules: usize = rng.gen_range(
+            spec.initial_generation.rules.min,
+            spec.initial_generation.rules.max,
+        );
         let mut rules = HashSet::with_capacity(number_of_rules);
 
         let mut consecutive_fails = 0;
@@ -105,7 +108,7 @@ impl Candidate {
         while rules.len() < number_of_rules {
             if !rules.insert(Rule::generate(&mut rng, spec)) {
                 consecutive_fails += 1;
-                if consecutive_fails >= spec.max_rule_generation_consecutive_fail {
+                if consecutive_fails >= spec.initial_generation.rules.rng_fail_retries {
                     break;
                 }
             } else {

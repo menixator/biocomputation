@@ -84,10 +84,13 @@ impl Population {
 
     // Generates a a random population for a given data set
     pub fn generate(spec: &GaSpec) -> Self {
-        let mut candidates = HashSet::with_capacity(spec.max_candidates);
+        let mut candidates = HashSet::with_capacity(spec.initial_generation.candidates.max);
         let mut consecutive_fails = 0;
         let mut rng = rand::thread_rng();
-        let number_of_candidates = rng.gen_range(spec.min_candidates, spec.max_candidates);
+        let number_of_candidates = rng.gen_range(
+            spec.initial_generation.candidates.min,
+            spec.initial_generation.candidates.max,
+        );
         while candidates.len() < number_of_candidates {
             let mut candidate = Candidate::generate(&mut rng, spec);
 
@@ -95,7 +98,7 @@ impl Population {
 
             if !candidates.insert(candidate) {
                 consecutive_fails += 1;
-                if consecutive_fails >= spec.max_candidate_generation_consecutive_fail {
+                if consecutive_fails >= spec.initial_generation.candidates.rng_fail_retries {
                     break;
                 }
             } else {

@@ -1,11 +1,14 @@
 use crate::candidate::Candidate;
 use crate::candidate::CandidateFitness;
 use rand::{self, Rng};
+use serde::Deserialize;
 use thiserror::Error;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct SelectionStrategy {
+    #[serde(flatten)]
     pub options: SelectionStrategyCommonOptions,
+    #[serde(rename = "type")]
     pub variant: SelectionStrategyVariant,
 }
 
@@ -25,13 +28,13 @@ impl SelectionStrategy {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub enum DuplicateHandlingStrategy {
     Allow,
     Disallow { retries: usize },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct SelectionStrategyCommonOptions {
     /// selection size
     pub size: usize,
@@ -39,7 +42,8 @@ pub struct SelectionStrategyCommonOptions {
     pub duplicates: DuplicateHandlingStrategy,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type")]
 pub enum SelectionStrategyVariant {
     Roulette(RouletteSelection),
     Tournament(TournamentSelection),
@@ -62,7 +66,7 @@ pub trait Selection {
     ) -> Result<Vec<CandidateFitness<'a>>, SelectionError>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct TournamentSelection {
     /// The tournament size
     pub size: usize,
@@ -124,7 +128,7 @@ impl Selection for TournamentSelection {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct RouletteSelection;
 
 impl Selection for RouletteSelection {

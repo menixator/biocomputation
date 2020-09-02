@@ -2,23 +2,26 @@ use crate::candidate::Candidate;
 use crate::candidate::CandidateFitness;
 use crate::rule::Rule;
 use rand::{self, Rng};
+use serde::Deserialize;
 use std::collections::HashSet;
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct CrossoverStrategy {
     pub matchup_strategy: MatchupStrategy,
+    #[serde(flatten)]
     pub options: CrossoverStrategyCommonOptions,
     pub mating_strategy: MatingStrategy,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct CrossoverStrategyCommonOptions {
     pub mirroring: MirroringStrategy,
     pub crossover_rate: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type")]
 pub enum MatchupStrategy {
     Random {
         allow_asexual: bool,
@@ -28,14 +31,15 @@ pub enum MatchupStrategy {
     LeastFittest,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
 pub enum MirroringStrategy {
     MirrorIfAsexual,
     AlwaysMirror,
     Never,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type")]
 pub enum MatingStrategy {
     SinglePointAtIndex { split_at: u8 },
     SinglePointAtPercentage { split_at: u8 },
