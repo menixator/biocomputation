@@ -10,15 +10,15 @@ use std::collections::HashSet;
 #[derive(Debug)]
 pub struct Population {
     generation: usize,
-    candidates: Vec<Candidate>,
+    candidates: HashSet<Candidate>,
 }
 
 impl Population {
-    pub fn candidates(&self) -> &Vec<Candidate> {
+    pub fn candidates(&self) -> &HashSet<Candidate> {
         &self.candidates
     }
 
-    pub fn candidates_mut(&mut self) -> &mut Vec<Candidate> {
+    pub fn candidates_mut(&mut self) -> &mut HashSet<Candidate> {
         &mut self.candidates
     }
 
@@ -26,12 +26,8 @@ impl Population {
         self.candidates.len()
     }
 
-    fn push(&mut self, candidate: Candidate) -> bool {
-        if self.candidates.contains(&candidate) {
-            return false;
-        }
-        self.candidates.push(candidate);
-        true
+    fn insert(&mut self, candidate: Candidate) -> bool {
+        self.candidates.insert(candidate)
     }
 
     pub fn calculate_fitness<'a>(
@@ -66,8 +62,6 @@ impl Population {
             }
         }
 
-        let candidates = candidates.into_iter().collect();
-
         Population {
             generation: 1,
             candidates,
@@ -75,8 +69,8 @@ impl Population {
     }
 }
 
-impl std::convert::AsRef<Vec<Candidate>> for Population {
-    fn as_ref(&self) -> &Vec<Candidate> {
+impl std::convert::AsRef<HashSet<Candidate>> for Population {
+    fn as_ref(&self) -> &HashSet<Candidate> {
         &self.candidates
     }
 }

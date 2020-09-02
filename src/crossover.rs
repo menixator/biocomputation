@@ -173,7 +173,7 @@ impl CrossoverStrategy {
                         .map(|rule| rule.clone())
                         .collect();
 
-                    results.push(Candidate::from_rules(first_child));
+                    results.push(Candidate::from_rules(&first_child));
                     let second_child = b
                         .candidate
                         .rules()
@@ -182,7 +182,7 @@ impl CrossoverStrategy {
                         .chain(a.candidate.rules().iter().skip(split_at_a))
                         .map(|rule| rule.clone())
                         .collect();
-                    results.push(Candidate::from_rules(second_child));
+                    results.push(Candidate::from_rules(&second_child));
                 }
                 Ok(results)
             }
@@ -217,7 +217,7 @@ impl CrossoverStrategy {
                         .map(|rule| rule.clone())
                         .collect();
 
-                    results.push(Candidate::from_rules(first_child));
+                    results.push(Candidate::from_rules(&first_child));
                     let second_child = b
                         .candidate
                         .rules()
@@ -226,7 +226,7 @@ impl CrossoverStrategy {
                         .chain(a.candidate.rules().iter().skip(split_at_a))
                         .map(|rule| rule.clone())
                         .collect();
-                    results.push(Candidate::from_rules(second_child));
+                    results.push(Candidate::from_rules(&second_child));
                 }
                 Ok(results)
             }
@@ -313,8 +313,8 @@ impl CrossoverStrategy {
                                 .map(|rule| rule.clone()),
                         );
                     }
-                    results.push(Candidate::from_rules(first_child));
-                    results.push(Candidate::from_rules(second_child));
+                    results.push(Candidate::from_rules(&first_child));
+                    results.push(Candidate::from_rules(&second_child));
                 }
                 Ok(results)
             }
@@ -408,8 +408,8 @@ impl CrossoverStrategy {
                                 .map(|rule| rule.clone()),
                         );
                     }
-                    results.push(Candidate::from_rules(first_child));
-                    results.push(Candidate::from_rules(second_child));
+                    results.push(Candidate::from_rules(&first_child));
+                    results.push(Candidate::from_rules(&second_child));
                 }
                 Ok(results)
             }
