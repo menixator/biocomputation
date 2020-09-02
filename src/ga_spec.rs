@@ -10,6 +10,7 @@ pub struct GaSpec {
     pub(crate) max_rules: usize,
     pub(crate) min_rules: usize,
     pub(crate) max_rule_generation_consecutive_fail: usize,
+    pub(crate) max_evolutions: usize,
 
     pub(crate) max_index: usize,
     pub(crate) max_rule_constraints: usize,
