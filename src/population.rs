@@ -89,7 +89,11 @@ impl Population {
         let mut rng = rand::thread_rng();
         let number_of_candidates = rng.gen_range(spec.min_candidates, spec.max_candidates);
         while candidates.len() < number_of_candidates {
-            if !candidates.insert(Candidate::generate(&mut rng, spec)) {
+            let mut candidate = Candidate::generate(&mut rng, spec);
+
+            candidate.set_birth_generation_id(0);
+
+            if !candidates.insert(candidate) {
                 consecutive_fails += 1;
                 if consecutive_fails >= spec.max_candidate_generation_consecutive_fail {
                     break;
