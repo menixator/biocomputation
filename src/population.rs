@@ -19,7 +19,21 @@ impl PartialEq<Population> for Population {
     }
 }
 
+impl Eq for Population {}
+
 impl Population {
+    pub fn generation(&self) -> usize {
+        self.generation
+    }
+
+    pub fn increment_generation(&mut self) {
+        self.generation += 1;
+    }
+
+    pub fn set_generation(&mut self, new_generation: usize) {
+        self.generation = new_generation;
+    }
+
     pub fn candidates(&self) -> &HashSet<Candidate> {
         &self.candidates
     }
