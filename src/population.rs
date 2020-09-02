@@ -18,6 +18,10 @@ impl Population {
         &self.candidates
     }
 
+    pub fn candidates_mut(&mut self) -> &mut HashSet<Candidate> {
+        &mut self.candidates
+    }
+
     pub fn len(&self) -> usize {
         self.candidates.len()
     }

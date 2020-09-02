@@ -23,6 +23,10 @@ impl Rule {
         &self.constraints
     }
 
+    pub fn constraints_mut(&mut self) -> &mut HashMap<usize, char> {
+        &mut self.constraints
+    }
+
     pub fn evaluate(&self, input: &str) -> Result<bool, RuleEvaluationError> {
         for (index, character) in &self.constraints {
             if input

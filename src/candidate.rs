@@ -35,6 +35,10 @@ impl Candidate {
         &self.rules
     }
 
+    pub fn rules_mut(&mut self) -> &mut HashSet<Rule> {
+        &mut self.rules
+    }
+
     /// Fitness is simply the number of test data a candidate's ruleset can classify correctly
     pub fn calculate_fitness(&self, data_set: &DataSet) -> Result<usize, FitnessCalculationError> {
         let mut fitness = 0;
