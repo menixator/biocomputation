@@ -13,6 +13,12 @@ pub struct Population {
     candidates: HashSet<Candidate>,
 }
 
+impl PartialEq<Population> for Population {
+    fn eq(&self, rhs: &Population) -> bool {
+        self.candidates() == rhs.candidates()
+    }
+}
+
 impl Population {
     pub fn candidates(&self) -> &HashSet<Candidate> {
         &self.candidates
