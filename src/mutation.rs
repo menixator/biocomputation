@@ -1,5 +1,7 @@
+use crate::candidate::Candidate;
 use crate::ga_spec::GaSpec;
 use crate::population::Population;
+use crate::rule::Rule;
 use rand::{self, Rng};
 use thiserror::Error;
 
@@ -48,9 +50,10 @@ impl MutationStrategy {
             return Ok(());
         }
 
-        let mut candidates = population.candidates_mut();
+        let candidates = population.candidates();
+        let mut changes: Vec<(Candidate, Candidate)> = Vec::new();
 
-        for candidate in candidates {
+        for orig_candidate in candidates {
             if !rng.gen_ratio(
                 self.options.chance_per_candidate.unwrap_or_default() as u32,
                 100,
@@ -58,7 +61,12 @@ impl MutationStrategy {
                 continue;
             }
 
-            for rule in candidate.rules_mut() {
+            let candidate = orig_candidate.clone();
+
+            let mut rules: Vec<Rule> = candidate.rules().iter().map(|rule| rule.clone()).collect();
+            let mut ran = false;
+
+            for rule in rules.iter_mut() {
                 if !rng.gen_ratio(self.options.chance_per_rule.unwrap_or_default() as u32, 100) {
                     continue;
                 }
@@ -70,6 +78,7 @@ impl MutationStrategy {
                     ) {
                         continue;
                     }
+                    ran = true;
 
                     // There is a chance that we might end up creating a candidate that is similar
                     match &self.variant {
@@ -163,7 +172,28 @@ impl MutationStrategy {
                     }
                 }
             }
+
+            if ran {
+                let new_candidate = Candidate::from_rules(&rules.into_iter().collect());
+                if new_candidate != candidate
+                    && !population.contains(&new_candidate)
+                    && changes
+                        .iter()
+                        .position(|(_, existing_new_candidate)| {
+                            *existing_new_candidate == new_candidate
+                        })
+                        .is_none()
+                {
+                    changes.push((candidate, new_candidate));
+                }
+            }
         }
+
+        for (remove_me, add_me) in changes.into_iter() {
+            population.remove(&remove_me);
+            population.insert(add_me);
+        }
+
         Ok(())
     }
 }
