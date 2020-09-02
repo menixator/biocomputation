@@ -22,6 +22,7 @@ pub struct CrossoverStrategyCommonOptions {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
 pub enum MatchupStrategy {
     Random {
         allow_asexual: bool,
@@ -32,6 +33,8 @@ pub enum MatchupStrategy {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "setting")]
+#[serde(rename_all = "snake_case")]
 pub enum MirroringStrategy {
     MirrorIfAsexual,
     AlwaysMirror,
@@ -39,6 +42,7 @@ pub enum MirroringStrategy {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum MatingStrategy {
     SinglePointAtIndex { split_at: u8 },

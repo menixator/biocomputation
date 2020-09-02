@@ -8,12 +8,15 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MutationStrategy {
+    #[serde(flatten)]
     pub options: MutationStrategyCommonOptions,
+    #[serde(flatten)]
     pub variant: MutationStrategyVariant,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
 pub enum MutationStrategyVariant {
     ConstraintSwap { delta: isize },
     ConstraintRandomize { swap_if_fail: bool, retries: usize },

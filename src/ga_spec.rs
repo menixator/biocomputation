@@ -93,6 +93,7 @@ pub struct InitialGenerationComponentSpec {
 struct InitialGenerationComponentSpecShadow {
     min: usize,
     max: usize,
+    #[serde(default)]
     rng_fail_retries: usize,
 }
 
@@ -118,7 +119,7 @@ impl std::convert::TryFrom<InitialGenerationComponentSpecShadow>
         if min == 0 && max == 0 {
             return Err(InitialGenerationComponentSpecParseError::MaxAndMinAreZero);
         }
-        if min < max {
+        if min > max {
             return Err(InitialGenerationComponentSpecParseError::MaxIsLessThanMin);
         }
         Ok(InitialGenerationComponentSpec {

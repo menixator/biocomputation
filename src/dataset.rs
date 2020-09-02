@@ -33,14 +33,7 @@ impl DataSet {
         self.0.first().map(|v| v.width())
     }
 
-    pub fn split_at_percentage(
-        self,
-        percentage: usize,
-    ) -> Result<(DataSet, DataSet), DataSetError> {
-        if percentage > 100 {
-            return Err(DataSetError::InvalidPercentage);
-        }
-        let percentage = percentage as f64;
+    pub fn split_at_percentage(self, percentage: f64) -> Result<(DataSet, DataSet), DataSetError> {
         let split_index = (percentage / 100.0) * self.0.len() as f64;
         let split_index = split_index as usize;
 

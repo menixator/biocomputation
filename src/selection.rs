@@ -8,7 +8,7 @@ use thiserror::Error;
 pub struct SelectionStrategy {
     #[serde(flatten)]
     pub options: SelectionStrategyCommonOptions,
-    #[serde(rename = "type")]
+    #[serde(flatten)]
     pub variant: SelectionStrategyVariant,
 }
 
@@ -29,6 +29,8 @@ impl SelectionStrategy {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "setting")]
 pub enum DuplicateHandlingStrategy {
     Allow,
     Disallow { retries: usize },
@@ -37,13 +39,14 @@ pub enum DuplicateHandlingStrategy {
 #[derive(Debug, Clone, Deserialize)]
 pub struct SelectionStrategyCommonOptions {
     /// selection size
-    pub size: usize,
+    pub selection_size: usize,
     /// whether or not to allow duplicates
     pub duplicates: DuplicateHandlingStrategy,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
 pub enum SelectionStrategyVariant {
     Roulette(RouletteSelection),
     Tournament(TournamentSelection),
@@ -69,7 +72,7 @@ pub trait Selection {
 #[derive(Debug, Clone, Deserialize)]
 pub struct TournamentSelection {
     /// The tournament size
-    pub size: usize,
+    pub tournament_size: usize,
 }
 
 impl Selection for TournamentSelection {
@@ -78,17 +81,17 @@ impl Selection for TournamentSelection {
         candidates: &Vec<CandidateFitness<'a>>,
         options: &SelectionStrategyCommonOptions,
     ) -> Result<Vec<CandidateFitness<'a>>, SelectionError> {
-        // options.size is the selection size, not the tournament size
-        let mut results: Vec<CandidateFitness> = Vec::with_capacity(options.size);
+        // options.selection_size is the selection size, not the tournament size
+        let mut results: Vec<CandidateFitness> = Vec::with_capacity(options.selection_size);
 
         let mut rng = rand::thread_rng();
 
-        // TODO: self.size or options.size could be 0
+        // TODO: self.size or options.selection_size could be 0
         // TODO: candidates could be 0
 
-        while results.len() < options.size {
+        while results.len() < options.selection_size {
             let mut best: Option<&CandidateFitness> = None;
-            for i in 0..self.size {
+            for i in 0..self.tournament_size {
                 // Rng can fail you
                 let index = {
                     let mut failures = 0;
@@ -137,7 +140,7 @@ impl Selection for RouletteSelection {
         candidates: &Vec<CandidateFitness<'a>>,
         options: &SelectionStrategyCommonOptions,
     ) -> Result<Vec<CandidateFitness<'a>>, SelectionError> {
-        let mut results: Vec<CandidateFitness> = Vec::with_capacity(options.size);
+        let mut results: Vec<CandidateFitness> = Vec::with_capacity(options.selection_size);
         let mut rng = rand::thread_rng();
 
         // First sum up the fitness values
@@ -146,7 +149,7 @@ impl Selection for RouletteSelection {
         let rng = rng.gen_range(0, total);
         let mut failures = 0;
 
-        while results.len() < options.size {
+        while results.len() < options.selection_size {
             let mut selected = None;
             for candidate in candidates {
                 cumulative_total += candidate.fitness;
