@@ -5,15 +5,11 @@ use thiserror::Error;
 
 #[derive(Debug, Clone)]
 pub struct SelectionStrategy {
-    options: SelectionStrategyCommonOptions,
-    variant: SelectionStrategyVariant,
+    pub options: SelectionStrategyCommonOptions,
+    pub variant: SelectionStrategyVariant,
 }
 
 impl SelectionStrategy {
-    pub fn new(variant: SelectionStrategyVariant, options: SelectionStrategyCommonOptions) -> Self {
-        Self { options, variant }
-    }
-
     pub fn select<'a>(
         &'_ self,
         candidates: &Vec<CandidateFitness<'a>>,
@@ -38,15 +34,9 @@ pub enum DuplicateHandlingStrategy {
 #[derive(Debug, Clone)]
 pub struct SelectionStrategyCommonOptions {
     /// selection size
-    size: usize,
+    pub size: usize,
     /// whether or not to allow duplicates
-    duplicates: DuplicateHandlingStrategy,
-}
-
-impl SelectionStrategyCommonOptions {
-    pub fn new(duplicates: DuplicateHandlingStrategy, size: usize) -> Self {
-        Self { duplicates, size }
-    }
+    pub duplicates: DuplicateHandlingStrategy,
 }
 
 #[derive(Debug, Clone)]
@@ -75,13 +65,7 @@ pub trait Selection {
 #[derive(Debug, Clone)]
 pub struct TournamentSelection {
     /// The tournament size
-    size: usize,
-}
-
-impl TournamentSelection {
-    pub fn new(size: usize) -> Self {
-        Self { size }
-    }
+    pub size: usize,
 }
 
 impl Selection for TournamentSelection {
