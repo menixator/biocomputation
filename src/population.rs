@@ -61,7 +61,7 @@ impl Population {
         for mut item in list {
             item.set_birth_generation_id(self.generation());
             if self.insert(item) {
-                added+=1;
+                added += 1;
             }
         }
         added
