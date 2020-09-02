@@ -56,6 +56,17 @@ impl Population {
         self.candidates.remove(&candidate)
     }
 
+    pub fn append(&mut self, list: Vec<Candidate>) -> usize {
+        let mut added = 0;
+        for mut item in list {
+            item.set_birth_generation_id(self.generation());
+            if self.insert(item) {
+                added+=1;
+            }
+        }
+        added
+    }
+
     pub fn calculate_fitness<'a>(
         &self,
         data_set: &'_ DataSet,
